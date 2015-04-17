@@ -1,31 +1,112 @@
 package away3d.loaders.parsers
 {
-	import away3d.*;
-	import away3d.animators.*;
-	import away3d.animators.data.*;
-	import away3d.animators.nodes.*;
-	import away3d.cameras.*;
-	import away3d.cameras.lenses.*;
-	import away3d.containers.*;
-	import away3d.core.base.*;
-	import away3d.entities.*;
-	import away3d.library.assets.*;
-	import away3d.lights.*;
-	import away3d.lights.shadowmaps.*;
-	import away3d.loaders.misc.*;
-	import away3d.loaders.parsers.utils.*;
-	import away3d.materials.*;
-	import away3d.materials.lightpickers.*;
-	import away3d.materials.methods.*;
-	import away3d.materials.utils.*;
-	import away3d.primitives.*;
-	import away3d.textures.*;
-	import away3d.tools.utils.*;
+	import flash.display.BitmapData;
+	import flash.display.BlendMode;
+	import flash.display.Sprite;
+	import flash.geom.ColorTransform;
+	import flash.geom.Matrix;
+	import flash.geom.Matrix3D;
+	import flash.geom.Vector3D;
+	import flash.net.URLRequest;
+	import flash.utils.ByteArray;
+	import flash.utils.Endian;
 	
-	import flash.display.*;
-	import flash.geom.*;
-	import flash.net.*;
-	import flash.utils.*;
+	import away3d.arcane;
+	import away3d.animators.AnimationSetBase;
+	import away3d.animators.AnimatorBase;
+	import away3d.animators.SkeletonAnimationSet;
+	import away3d.animators.SkeletonAnimator;
+	import away3d.animators.VertexAnimationSet;
+	import away3d.animators.VertexAnimator;
+	import away3d.animators.data.JointPose;
+	import away3d.animators.data.Skeleton;
+	import away3d.animators.data.SkeletonJoint;
+	import away3d.animators.data.SkeletonPose;
+	import away3d.animators.data.UVAnimationFrame;
+	import away3d.animators.nodes.SkeletonClipNode;
+	import away3d.animators.nodes.UVClipNode;
+	import away3d.animators.nodes.VertexClipNode;
+	import away3d.cameras.Camera3D;
+	import away3d.cameras.lenses.LensBase;
+	import away3d.cameras.lenses.OrthographicLens;
+	import away3d.cameras.lenses.OrthographicOffCenterLens;
+	import away3d.cameras.lenses.PerspectiveLens;
+	import away3d.containers.ObjectContainer3D;
+	import away3d.core.base.CompactSubGeometry;
+	import away3d.core.base.Geometry;
+	import away3d.core.base.ISubGeometry;
+	import away3d.core.base.SubMesh;
+	import away3d.entities.Mesh;
+	import away3d.entities.TextureProjector;
+	import away3d.library.assets.AssetType;
+	import away3d.library.assets.IAsset;
+	import away3d.lights.DirectionalLight;
+	import away3d.lights.LightBase;
+	import away3d.lights.PointLight;
+	import away3d.lights.shadowmaps.CascadeShadowMapper;
+	import away3d.lights.shadowmaps.CubeMapShadowMapper;
+	import away3d.lights.shadowmaps.DirectionalShadowMapper;
+	import away3d.lights.shadowmaps.NearDirectionalShadowMapper;
+	import away3d.lights.shadowmaps.ShadowMapperBase;
+	import away3d.loaders.misc.ResourceDependency;
+	import away3d.loaders.parsers.utils.ParserUtil;
+	import away3d.materials.ColorMaterial;
+	import away3d.materials.ColorMultiPassMaterial;
+	import away3d.materials.MaterialBase;
+	import away3d.materials.MultiPassMaterialBase;
+	import away3d.materials.SinglePassMaterialBase;
+	import away3d.materials.TextureMaterial;
+	import away3d.materials.TextureMultiPassMaterial;
+	import away3d.materials.lightpickers.LightPickerBase;
+	import away3d.materials.lightpickers.StaticLightPicker;
+	import away3d.materials.methods.AlphaMaskMethod;
+	import away3d.materials.methods.AnisotropicSpecularMethod;
+	import away3d.materials.methods.CascadeShadowMapMethod;
+	import away3d.materials.methods.CelDiffuseMethod;
+	import away3d.materials.methods.CelSpecularMethod;
+	import away3d.materials.methods.ColorMatrixMethod;
+	import away3d.materials.methods.ColorTransformMethod;
+	import away3d.materials.methods.DepthDiffuseMethod;
+	import away3d.materials.methods.DitheredShadowMapMethod;
+	import away3d.materials.methods.EffectMethodBase;
+	import away3d.materials.methods.EnvMapAmbientMethod;
+	import away3d.materials.methods.EnvMapMethod;
+	import away3d.materials.methods.FilteredShadowMapMethod;
+	import away3d.materials.methods.FogMethod;
+	import away3d.materials.methods.FresnelEnvMapMethod;
+	import away3d.materials.methods.FresnelSpecularMethod;
+	import away3d.materials.methods.GradientDiffuseMethod;
+	import away3d.materials.methods.HardShadowMapMethod;
+	import away3d.materials.methods.LightMapDiffuseMethod;
+	import away3d.materials.methods.LightMapMethod;
+	import away3d.materials.methods.NearShadowMapMethod;
+	import away3d.materials.methods.OutlineMethod;
+	import away3d.materials.methods.PhongSpecularMethod;
+	import away3d.materials.methods.ProjectiveTextureMethod;
+	import away3d.materials.methods.RefractionEnvMapMethod;
+	import away3d.materials.methods.RimLightMethod;
+	import away3d.materials.methods.ShadowMapMethodBase;
+	import away3d.materials.methods.SimpleWaterNormalMethod;
+	import away3d.materials.methods.SoftShadowMapMethod;
+	import away3d.materials.methods.SubsurfaceScatteringDiffuseMethod;
+	import away3d.materials.methods.WrapDiffuseMethod;
+	import away3d.materials.utils.DefaultMaterialManager;
+	import away3d.primitives.CapsuleGeometry;
+	import away3d.primitives.ConeGeometry;
+	import away3d.primitives.CubeGeometry;
+	import away3d.primitives.CylinderGeometry;
+	import away3d.primitives.PlaneGeometry;
+	import away3d.primitives.SkyBox;
+	import away3d.primitives.SphereGeometry;
+	import away3d.primitives.TorusGeometry;
+	import away3d.textures.ATFCubeTexture;
+	import away3d.textures.ATFTexture;
+	import away3d.textures.BitmapCubeTexture;
+	import away3d.textures.BitmapTexture;
+	import away3d.textures.CubeTextureBase;
+	import away3d.textures.Texture2DBase;
+	import away3d.textures.TextureProxyBase;
+	import away3d.tools.utils.GeomUtil;
 	
 	use namespace arcane;
 	
@@ -399,11 +480,11 @@ package away3d.loaders.parsers
 			if ((_version[0] == 2) && (_version[1] == 1)) {
 				switch (type) {
 					case 11:
-						parsePrimitves(_cur_block_id);
+						parsePrimitve(_cur_block_id);
 						isParsed = true;
 						break;
 					case 31:
-						parseSkyBoxInstance(_cur_block_id);
+						parseSkyBox(_cur_block_id);
 						isParsed = true;
 						break;
 					case 41:
@@ -447,11 +528,11 @@ package away3d.loaders.parsers
 						isParsed = true;
 						break;
 					case 113:
-						parseVertexAnimationSet(_cur_block_id);
+						parseAnimationSet(_cur_block_id);
 						isParsed = true;
 						break;
 					case 122:
-						parseAnimatorSet(_cur_block_id);
+						parseAnimator(_cur_block_id);
 						isParsed = true;
 						break;
 					case 253:
@@ -587,7 +668,6 @@ package away3d.loaders.parsers
 					} else if (str_type == 2) {
 						var indices:Vector.<uint> = new Vector.<uint>();
 						while (_newBlockBytes.position < str_end) {
-							// TODO: Respect stream field type
 							indices[idx++] = _newBlockBytes.readUnsignedShort();
 						}
 					} else if (str_type == 3) {
@@ -598,26 +678,33 @@ package away3d.loaders.parsers
 						var normals:Vector.<Number> = new Vector.<Number>();
 						while (_newBlockBytes.position < str_end)
 							normals[idx++] = readNumber(_accuracyGeo);
+					} else if (str_type == 5) {
+						var tangents:Vector.<Number> = new Vector.<Number>();
+						while (_newBlockBytes.position < str_end)
+							tangents[idx++] = readNumber(_accuracyGeo);
 					} else if (str_type == 6) {
 						w_indices = new Vector.<Number>();
 						while (_newBlockBytes.position < str_end)
-							w_indices[idx++] = _newBlockBytes.readUnsignedShort()*3; // TODO: Respect stream field type
+							w_indices[idx++] = _newBlockBytes.readUnsignedShort()*3;
 					} else if (str_type == 7) {
 						weights = new Vector.<Number>();
 						while (_newBlockBytes.position < str_end)
 							weights[idx++] = readNumber(_accuracyGeo);
+					} else if (str_type == 8) {
+						var secondaryUVs:Vector.<Number> = new Vector.<Number>();
+						while (_newBlockBytes.position < str_end)
+							secondaryUVs[idx++] = readNumber(_accuracyGeo);
 					} else
 						_newBlockBytes.position = str_end;
 				}
 				parseUserAttributes(); // Ignore sub-mesh attributes for now
 				
-				sub_geoms = GeomUtil.fromVectors(verts, indices, uvs, normals, null, weights, w_indices);
+				sub_geoms = GeomUtil.fromVectors(verts, indices, uvs, normals, tangents, weights, w_indices, secondaryUVs);
 				
 				var scaleU:Number = subProps.get(1, 1);
 				var scaleV:Number = subProps.get(2, 1);
 				var setSubUVs:Boolean = false; //this should remain false atm, because in AwayBuilder the uv is only scaled by the geometry
 				if ((geoScaleU != scaleU) || (geoScaleV != scaleV)) {
-					trace("set sub uvs");
 					setSubUVs = true;
 					scaleU = geoScaleU/scaleU;
 					scaleV = geoScaleV/scaleV;
@@ -643,7 +730,7 @@ package away3d.loaders.parsers
 		}
 		
 		//Block ID = 11
-		private function parsePrimitves(blockID:uint):void
+		private function parsePrimitve(blockID:uint):void
 		{
 			var name:String;
 			var geom:Geometry;
@@ -805,10 +892,33 @@ package away3d.loaders.parsers
 					mesh.subMeshes[i].material = materials[Math.min(materials.length - 1, i)];
 			}
 			if ((_version[0] == 2) && (_version[1] == 1)) {
-				var props:Object = parseProperties({1:_matrixNrType, 2:_matrixNrType, 3:_matrixNrType, 4:UINT8, 5:BOOL});
+				var props:Object = parseProperties({1:_matrixNrType, 2:_matrixNrType, 3:_matrixNrType, 4:UINT8, 5:BOOL, 6:_propsNrType, 7:_propsNrType});
 				mesh.pivotPoint = new Vector3D(props.get(1, 0), props.get(2, 0), props.get(3, 0));
 				mesh.castsShadows = props.get(5, true);
-			} else
+				var uvTransform:Array=props.get(6, new Array());
+				if (uvTransform.length==0){
+					uvTransform=props.get(7, new Array());
+				}
+				if (uvTransform.length>0){
+					var uvCnt:int=0
+					for each (var subMesh:SubMesh in mesh.subMeshes){
+						var thisUVTransform:Matrix=new Matrix(uvTransform[uvCnt], uvTransform[uvCnt+1], uvTransform[uvCnt+2], uvTransform[uvCnt+3], uvTransform[uvCnt+4], uvTransform[uvCnt+5]);
+						if (subMesh.material is TextureMaterial)
+							TextureMaterial(subMesh.material).animateUVs = true;
+						else if (subMesh.material is TextureMultiPassMaterial)
+							TextureMultiPassMaterial(subMesh.material).animateUVs=true;
+						subMesh.offsetU=uvTransform[uvCnt+4];
+						subMesh.offsetV=uvTransform[uvCnt+5];
+						subMesh.scaleU=uvTransform[uvCnt];
+						subMesh.scaleV=uvTransform[uvCnt+3];
+						//subMesh.uvRotation=0.0;//todo: set uvTransform by matrix, or get the correct rotation
+						if (uvCnt<uvTransform.length){
+							uvCnt+=6;
+						}
+					}
+				}
+			} 
+			else
 				parseProperties(null);
 			mesh.extra = parseUserAttributes();
 			finalizeAsset(mesh, name);
@@ -819,7 +929,7 @@ package away3d.loaders.parsers
 		}
 		
 		//Block ID 31
-		private function parseSkyBoxInstance(blockID:uint):void
+		private function parseSkyBox(blockID:uint):void
 		{
 			var name:String = parseVarStr();
 			var cubeTexAddr:uint = _newBlockBytes.readUnsignedInt();
@@ -915,7 +1025,7 @@ package away3d.loaders.parsers
 		
 		}
 		
-		//Block ID = 43
+		//Block ID = 42
 		private function parseCamera(blockID:uint):void
 		{
 			
@@ -1381,15 +1491,17 @@ package away3d.loaders.parsers
 							if (!returnedArray[0])
 								_blocks[blockID].addError("Could not find the SecoundNormalMap (ID = " + targetID + " ) for this SimpleWaterNormalMethod");
 							if (spezialType == 0) {
-								if (!SinglePassMaterialBase(mat).normalMap)
+								if (!SinglePassMaterialBase(mat).normalMap){
 									_blocks[blockID].addError("Could not find a normal Map on this Material to use with this SimpleWaterNormalMethod");
-								SinglePassMaterialBase(mat).normalMap = returnedArray[1];
+									SinglePassMaterialBase(mat).normalMap = returnedArray[1];
+								}
 								SinglePassMaterialBase(mat).normalMethod = new SimpleWaterNormalMethod(SinglePassMaterialBase(mat).normalMap, returnedArray[1]);
 							}
 							if (spezialType == 1) {
-								if (!MultiPassMaterialBase(mat).normalMap)
+								if (!MultiPassMaterialBase(mat).normalMap){
 									_blocks[blockID].addError("Could not find a normal Map on this Material to use with this SimpleWaterNormalMethod");
-								MultiPassMaterialBase(mat).normalMap = returnedArray[1];
+									MultiPassMaterialBase(mat).normalMap = returnedArray[1];
+								}
 								MultiPassMaterialBase(mat).normalMethod = new SimpleWaterNormalMethod(MultiPassMaterialBase(mat).normalMap, returnedArray[1]);
 							}
 							debugString += " | SimpleWaterNormalMethod | Second-NormalTexture-Name = " + Texture2DBase(returnedArray[1]).name;
@@ -1534,7 +1646,7 @@ package away3d.loaders.parsers
 					returnedArray = getAssetByID(targetID, [AssetType.TEXTURE]);
 					if (!returnedArray[0])
 						_blocks[blockID].addError("Could not find the LightMap (ID = " + targetID + " ) for this LightMapMethod");
-					effectMethodReturn = new LightMapMethod(returnedArray[1], blendModeDic[props.get(401, 10)]); //usesecondaryUV not set					
+					effectMethodReturn = new LightMapMethod(returnedArray[1], blendModeDic[props.get(401, 10)], props.get(701, false));				
 					break;
 				case 405: //ProjectiveTextureMethod
 					targetID = props.get(1, 0);
@@ -1559,7 +1671,7 @@ package away3d.loaders.parsers
 					if (!returnedArray[0])
 						_blocks[blockID].addError("Could not find the EnvMap (ID = " + targetID + " ) for this RefractionEnvMapMethod");
 					effectMethodReturn = new RefractionEnvMapMethod(returnedArray[1], props.get(101, 0.1), props.get(102, 0.01), props.get(103, 0.01), props.get(104, 0.01));
-					RefractionEnvMapMethod(effectMethodReturn).alpha = props.get(104, 1);
+					RefractionEnvMapMethod(effectMethodReturn).alpha = props.get(105, 1);
 					break;
 				case 409: //OutlineMethod
 					effectMethodReturn = new OutlineMethod(props.get(601, 0x00000000), props.get(101, 1), props.get(701, true), props.get(702, false));
@@ -1858,28 +1970,28 @@ package away3d.loaders.parsers
 		}
 		
 		//BlockID 113
-		private function parseVertexAnimationSet(blockID:uint):void
+		private function parseAnimationSet(blockID:uint):void
 		{
 			var poseBlockAdress:int
 			var outputString:String = "";
 			var name:String = parseVarStr();
-			var num_frames:uint = _newBlockBytes.readUnsignedShort();
+			var num_clips:uint = _newBlockBytes.readUnsignedShort();
 			var props:AWDProperties = parseProperties({1:UINT16});
-			var frames_parsed:uint = 0;
+			var clips_parsed:uint = 0;
 			var skeletonFrames:Vector.<SkeletonClipNode> = new Vector.<SkeletonClipNode>;
 			var vertexFrames:Vector.<VertexClipNode> = new Vector.<VertexClipNode>;
-			while (frames_parsed < num_frames) {
+			while (clips_parsed < num_clips) {
 				poseBlockAdress = _newBlockBytes.readUnsignedInt();
 				var returnedArray:Array = getAssetByID(poseBlockAdress, [AssetType.ANIMATION_NODE]);
 				if (!returnedArray[0])
-					_blocks[blockID].addError("Could not find the AnimationClipNode Nr " + frames_parsed + " ( " + poseBlockAdress + " ) for this AnimationSet");
+					_blocks[blockID].addError("Could not find the AnimationClipNode Nr " + clips_parsed + " ( " + poseBlockAdress + " ) for this AnimationSet");
 				else {
 					if (returnedArray[1] is VertexClipNode)
 						vertexFrames.push(returnedArray[1])
 					if (returnedArray[1] is SkeletonClipNode)
 						skeletonFrames.push(returnedArray[1])
 				}
-				frames_parsed++;
+				clips_parsed++;
 			}
 			if ((vertexFrames.length == 0) && (skeletonFrames.length == 0)) {
 				_blocks[blockID].addError("Could not create this AnimationSet, because it contains no animations");
@@ -1936,7 +2048,7 @@ package away3d.loaders.parsers
 		}
 		
 		//BlockID 122
-		private function parseAnimatorSet(blockID:uint):void
+		private function parseAnimator(blockID:uint):void
 		{
 			var targetMesh:Mesh;
 			var animSetBlockAdress:int
@@ -2269,14 +2381,14 @@ package away3d.loaders.parsers
 							if (IAsset(_blocks[assetID].data).assetType == assetTypesToGet[typeCnt]) {
 								//if the right assetType was found 
 								if ((assetTypesToGet[typeCnt] == AssetType.TEXTURE) && (extraTypeInfo == "CubeTexture")) {
-									if (_blocks[assetID].data is BitmapCubeTexture) {
+									if ((_blocks[assetID].data is BitmapCubeTexture)||(_blocks[assetID].data is ATFCubeTexture)) {
 										returnArray.push(true);
 										returnArray.push(_blocks[assetID].data);
 										return returnArray;
 									}
 								}
 								if ((assetTypesToGet[typeCnt] == AssetType.TEXTURE) && (extraTypeInfo == "SingleTexture")) {
-									if (_blocks[assetID].data is BitmapTexture) {
+									if ((_blocks[assetID].data is BitmapTexture)||(_blocks[assetID].data is ATFTexture)) {
 										returnArray.push(true);
 										returnArray.push(_blocks[assetID].data);
 										return returnArray;

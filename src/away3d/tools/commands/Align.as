@@ -305,4 +305,9 @@ class MeshBound
 	public var maxX:Number;
 	public var maxY:Number;
 	public var maxZ:Number;
+	
+	public function MeshBound()
+	{
+		
+	}
 }

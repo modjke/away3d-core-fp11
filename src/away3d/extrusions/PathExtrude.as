@@ -1310,4 +1310,9 @@ class SubGeometryList
 	public var indices:Vector.<uint>;
 	public var subGeometry:SubGeometry;
 	public var material:MaterialBase;
+	
+	public function SubGeometryList()
+	{
+		
+	}
 }

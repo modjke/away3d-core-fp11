@@ -274,4 +274,9 @@ class TouchPoint
 	public var id:int;
 	public var x:Number;
 	public var y:Number;
+	
+	public function TouchPoint() 
+	{
+		
+	}
 }

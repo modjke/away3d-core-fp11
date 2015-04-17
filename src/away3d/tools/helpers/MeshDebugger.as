@@ -304,4 +304,9 @@ class MeshDebugData
 	public var displayVertexNormals:Boolean;
 	public var displayTangents:Boolean;
 	public var addChilded:Boolean;
+	
+	public function MeshDebugData()
+	{
+		
+	}
 }

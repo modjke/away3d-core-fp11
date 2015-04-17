@@ -14,7 +14,7 @@ package away3d.core.pick
 	 */
 	public class PBPickingCollider extends PickingColliderBase implements IPickingCollider
 	{
-		[Embed("/../pb/RayTriangleKernel.pbj", mimeType="application/octet-stream")]
+		[Embed("../../../../pb/RayTriangleKernel.pbj", mimeType="application/octet-stream")]
 		private var RayTriangleKernelClass:Class;
 		
 		private var _findClosestCollision:Boolean;

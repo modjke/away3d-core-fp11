@@ -809,10 +809,20 @@ class Tri
 	public var v0:int;
 	public var v1:int;
 	public var v2:int;
+	
+	public function Tri()
+	{
+		
+	}
 }
 
 class Edge
 {
 	public var v0:int;
 	public var v1:int;
+	
+	public function Edge()
+	{
+		
+	}
 }

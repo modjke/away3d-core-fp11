@@ -407,4 +407,9 @@ class ViewCell
 {
 	public var visibleStatics:Vector.<EntityNode> = new Vector.<EntityNode>();
 	public var visibleDynamics:Vector.<InvertedOctreeNode> = new Vector.<InvertedOctreeNode>();
+	
+	public function ViewCell() {
+		
+	}
 }
+

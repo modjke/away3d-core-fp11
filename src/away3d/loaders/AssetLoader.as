@@ -4,6 +4,7 @@ package away3d.loaders
 	import away3d.events.*;
 	import away3d.loaders.misc.*;
 	import away3d.loaders.parsers.*;
+	import flash.external.ExternalInterface;
 	
 	import flash.events.*;
 	import flash.net.*;
@@ -391,7 +392,7 @@ package away3d.loaders
 					_loadingDependency.loader.parseData(data, parser, _loadingDependency.request);
 			} else {
 				// Resolve URL and start loading
-				dependency.request.url = resolveDependencyUrl(dependency);
+				dependency.request.url = resolveDependencyUrl(dependency);				
 				_loadingDependency.loader.load(dependency.request, parser, _loadingDependency.retrieveAsRawData);
 			}
 		}

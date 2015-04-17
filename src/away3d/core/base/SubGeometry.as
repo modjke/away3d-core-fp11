@@ -305,7 +305,7 @@
 			return _uvs;
 		}
 		
-		public function get secondaryUVData():Vector.<Number>
+		override public function get SecondaryUVData():Vector.<Number>
 		{
 			return _secondaryUvs;
 		}
@@ -378,12 +378,16 @@
 			invalidateBuffers(_tangentsInvalid);
 		}
 		
-		public function fromVectors(vertices:Vector.<Number>, uvs:Vector.<Number>, normals:Vector.<Number>, tangents:Vector.<Number>):void
+		public function fromVectors(vertices:Vector.<Number>, uvs:Vector.<Number>, normals:Vector.<Number>, tangents:Vector.<Number>, secondaryUVs:Vector.<Number>=null):void
 		{
 			updateVertexData(vertices);
 			updateUVData(uvs);
 			updateVertexNormalData(normals);
 			updateVertexTangentData(tangents);
+			if (secondaryUVs && secondaryUVs.length){
+				updateSecondaryUVData(secondaryUVs);				
+				hasSecondaryUVs = true;
+			}
 		}
 		
 		override protected function updateVertexNormals(target:Vector.<Number>):Vector.<Number>

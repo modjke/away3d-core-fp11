@@ -606,6 +606,11 @@ final class SegRef
 	public var index:uint;
 	public var subSetIndex:uint;
 	public var segment:Segment;
+	
+	public function SegRef()
+	{
+		
+	}
 }
 
 final class SubSet
@@ -639,6 +644,11 @@ final class SubSet
 			vertexBuffer.dispose();
 		if (indexBuffer)
 			indexBuffer.dispose();
+	}
+	
+	public function SubSet()
+	{
+		
 	}
 }
 

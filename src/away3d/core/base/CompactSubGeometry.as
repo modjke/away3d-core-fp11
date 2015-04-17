@@ -1,12 +1,13 @@
 package away3d.core.base
 {
-	import away3d.arcane;
-	import away3d.core.managers.Stage3DProxy;
-	
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DVertexBufferFormat;
 	import flash.display3D.VertexBuffer3D;
 	import flash.geom.Matrix3D;
+	import flash.utils.ByteArray;
+	
+	import away3d.arcane;
+	import away3d.core.managers.Stage3DProxy;
 	
 	use namespace arcane;
 	
@@ -222,6 +223,11 @@ package away3d.core.base
 			return _vertexData;
 		}
 		
+		override public function get SecondaryUVData():Vector.<Number>
+		{
+			return _vertexData;
+		}
+		
 		override public function applyTransformation(transform:Matrix3D):void
 		{
 			super.applyTransformation(transform);
@@ -368,9 +374,15 @@ package away3d.core.base
 			return data;
 		}
 		
-		public function fromVectors(verts:Vector.<Number>, uvs:Vector.<Number>, normals:Vector.<Number>, tangents:Vector.<Number>):void
+		public function fromVectors(verts:Vector.<Number>, uvs:Vector.<Number>, normals:Vector.<Number>, tangents:Vector.<Number>, secondaryUVs:Vector.<Number>=null):void
 		{
 			var vertLen:int = verts.length/3*13;
+			hasSecondaryUVs = (secondaryUVs && secondaryUVs.length);
+			if (!secondaryUVs) 
+				secondaryUVs=uvs;
+			else
+				if (secondaryUVs.length != uvs.length) 
+					secondaryUVs=uvs;
 			
 			var index:int = 0;
 			var v:int = 0;
@@ -408,9 +420,14 @@ package away3d.core.base
 				if (uvs && uvs.length) {
 					data[index++] = uvs[u];
 					data[index++] = uvs[u + 1];
-					// use same secondary uvs as primary
-					data[index++] = uvs[u++];
-					data[index++] = uvs[u++];
+					if (secondaryUVs && secondaryUVs.length) {
+						data[index++] = secondaryUVs[u++];
+						data[index++] = secondaryUVs[u++];
+					}
+					else{
+						data[index++] = uvs[u++];
+						data[index++] = uvs[u++];						
+					}
 				} else {
 					data[index++] = 0;
 					data[index++] = 0;

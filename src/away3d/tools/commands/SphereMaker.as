@@ -3,13 +3,8 @@ package away3d.tools.commands
 	import away3d.arcane;
 	import away3d.bounds.BoundingVolumeBase;
 	import away3d.containers.ObjectContainer3D;
-	import away3d.core.base.Geometry;
 	import away3d.core.base.ISubGeometry;
-	import away3d.core.base.SubGeometry;
-	import away3d.core.base.data.UV;
-	import away3d.core.base.data.Vertex;
 	import away3d.entities.Mesh;
-	import away3d.tools.utils.Bounds;
 	
 	import flash.geom.Vector3D;
 	import flash.utils.Dictionary;
